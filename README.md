@@ -1,5 +1,22 @@
-Быстрый VPN для России — YouTube без буферизации, Discord/Instagram/ChatGPT снова работают.
-_Подключение в Telegram через [@rosevpnru_bot](https://t.me/rosevpnru_bot) — бесплатный пробный период, без регистрации, без карты._
+<!-- ════════════════════════ ROSEVPN — sponsor ════════════════════════ -->
+
+<p align="center">
+  <a href="https://t.me/rosevpnru_bot">
+    <img src="https://img.shields.io/badge/%F0%9F%8C%B9%20RoseVPN-%D0%9F%D0%BE%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D0%B2%D0%B0%D1%82%D1%8C%20%D0%B1%D0%B5%D1%81%D0%BF%D0%BB%D0%B0%D1%82%D0%BD%D0%BE-E63946?style=for-the-badge&logo=telegram&logoColor=white&labelColor=0a0a0a" height="44" alt="RoseVPN — попробовать бесплатно в Telegram"/>
+  </a>
+</p>
+
+<p align="center">
+  <b>Быстрый VPN для России</b> — YouTube без буферизации, Discord/Instagram/ChatGPT снова работают.<br/>
+  <sub>Подключение в Telegram через <a href="https://t.me/rosevpnru_bot"><b>@rosevpnru_bot</b></a> — бесплатный пробный период, без регистрации, без карты.</sub>
+</p>
+
+<p align="center">
+  <a href="https://t.me/rosevpnru_bot"><img alt="YouTube — без буферов" src="https://img.shields.io/badge/YouTube-%D0%B1%D0%B5%D0%B7%20%D0%B1%D1%83%D1%84%D0%B5%D1%80%D0%BE%D0%B2-E63946?style=flat-square&logo=youtube&logoColor=white"></a>
+  <a href="https://t.me/rosevpnru_bot"><img alt="Discord — голос работает" src="https://img.shields.io/badge/Discord-%D0%B3%D0%BE%D0%BB%D0%BE%D1%81%20%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D0%B0%D0%B5%D1%82-E63946?style=flat-square&logo=discord&logoColor=white"></a>
+  <a href="https://t.me/rosevpnru_bot"><img alt="Instagram — открывается" src="https://img.shields.io/badge/Instagram-%D0%BE%D1%82%D0%BA%D1%80%D1%8B%D0%B2%D0%B0%D0%B5%D1%82%D1%81%D1%8F-E63946?style=flat-square&logo=instagram&logoColor=white"></a>
+  <a href="https://t.me/rosevpnru_bot"><img alt="ChatGPT — доступен" src="https://img.shields.io/badge/ChatGPT-%D0%B4%D0%BE%D1%81%D1%82%D1%83%D0%BF%D0%B5%D0%BD-E63946?style=flat-square&logo=openai&logoColor=white"></a>
+</p>
 
 ---
 
