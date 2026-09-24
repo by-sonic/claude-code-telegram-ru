@@ -20,6 +20,31 @@ $Log = Join-Path $Root 'bridge\bridge.log'
 function Fail($m) { Write-Host "[!] $m" -ForegroundColor Red; exit 1 }
 function Note($m) { Write-Host "    $m" -ForegroundColor DarkGray }
 
+# Включён ли официальный плагин telegram. Сначала --json: текстовый вывод
+# многострочный, и прежняя регулярка по нему могла зацепить статус соседнего
+# плагина — и мост отказывался стартовать при выключенном telegram.
+function Test-TelegramPluginEnabled {
+  # Нативная команда может писать в stderr, а при ErrorActionPreference=Stop
+  # PowerShell 5.1 превращает такую строку в прерывающую ошибку.
+  $ErrorActionPreference = 'Continue'
+  $id = 'telegram@claude-plugins-official'
+  $raw = (& claude plugin list --json 2>$null | Out-String).Trim()
+  if ($raw.StartsWith('[')) {
+    try {
+      foreach ($p in ($raw | ConvertFrom-Json)) { if ($p.id -eq $id -and $p.enabled) { return $true } }
+      return $false
+    } catch {}
+  }
+  # Старые версии без --json: смотрим только кусок от id плагина до следующего плагина.
+  $text = & claude plugin list 2>$null | Out-String
+  $i = $text.IndexOf($id)
+  if ($i -lt 0) { return $false }
+  $tail = $text.Substring($i + $id.Length)
+  $next = $tail.IndexOf('@')
+  if ($next -ge 0) { $tail = $tail.Substring(0, $next) }
+  return $tail -match '\benabled\b'
+}
+
 # Мост держит лог открытым на запись, поэтому обычное чтение падает с IOException.
 # Плюс лог в UTF-8: Get-Content в PS 5.1 прочитал бы его как ANSI и выдал кракозябры.
 function Read-Log($path) {
@@ -36,8 +61,10 @@ $envFile = Join-Path $env:USERPROFILE '.claude\channels\telegram\.env'
 if (-not (Test-Path $envFile)) { Fail "нет токена: $envFile" }
 
 # Плагин канала обязан быть выключен — иначе борьба за getUpdates.
-$plugins = claude plugin list 2>&1 | Out-String
-if ($plugins -match 'telegram@claude-plugins-official[\s\S]{0,120}?enabled') {
+if (-not (Get-Command claude -ErrorAction SilentlyContinue)) {
+  Write-Host '[!] claude не найден в PATH — проверку плагина пропускаю.' -ForegroundColor Yellow
+  Note 'Если мост не найдёт claude.exe сам, укажи путь в переменной окружения CLAUDE_EXE.'
+} elseif (Test-TelegramPluginEnabled) {
   Write-Host '[!] Плагин telegram включён — он будет драться с мостом за токен.' -ForegroundColor Yellow
   Note 'Выключи: claude plugin disable telegram'
   exit 1
@@ -52,17 +79,28 @@ if ($running.Count) {
   exit 0
 }
 
+# Хвосты прошлого запуска, если мост упал или его убили: осиротевшие claude-воркеры,
+# whisper и поллер плагина. Поллер-сирота держит getUpdates-слот токена, и новый
+# мост ловил бы 409 Conflict.
+& (Join-Path $Root 'stop.ps1') -Quiet
+
 if ($Foreground) {
   & bun $Script
   exit $LASTEXITCODE
 }
 
-if (Test-Path $Log) { Remove-Item $Log -Force -ErrorAction SilentlyContinue }
+# Прошлый лог не удаляем, а откладываем в .prev: если мост упал ночью, а утром его
+# перезапустили, причина падения иначе пропала бы вместе с файлом.
+foreach ($f in @($Log, "$Log.err")) {
+  if (Test-Path $f) { Move-Item $f "$f.prev" -Force -ErrorAction SilentlyContinue }
+}
 
 # -WindowStyle Hidden, а НЕ -NoNewWindow: при -NoNewWindow мост делит консоль с этим
 # скриптом и умирает вместе с ней, когда окно ярлыка закрывается через несколько секунд.
 # Скрытая консоль отвязывает его от родителя, и мост живёт до stop.ps1.
-$p = Start-Process -FilePath 'bun' -ArgumentList @($Script) -WorkingDirectory (Join-Path $Root 'bridge') `
+# Путь в кавычках явно: Start-Process не квотирует элементы -ArgumentList, и при
+# пробеле в пути (C:\Users\Ivan Petrov\...) bun получил бы обрубок.
+$p = Start-Process -FilePath 'bun' -ArgumentList "`"$Script`"" -WorkingDirectory (Join-Path $Root 'bridge') `
      -RedirectStandardOutput $Log -RedirectStandardError "$Log.err" -WindowStyle Hidden -PassThru
 
 Start-Sleep -Seconds 6
@@ -78,4 +116,4 @@ Write-Host "[+] Мост поднят (pid $($p.Id))." -ForegroundColor Green
 (Read-Log $Log) -split "`r?`n" | ForEach-Object { if ($_.Trim()) { Note $_.Trim() } }
 Write-Host ''
 Note 'Пиши боту в Telegram. Погасить всё: .\stop.ps1'
-Note "Лог: $Log"
+Note "Лог: $Log (прошлый запуск — $Log.prev)"
